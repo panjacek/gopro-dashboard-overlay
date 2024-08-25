@@ -5,6 +5,7 @@ from importlib import metadata
 from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 from typing import Optional
+import logging
 
 from gopro_overlay import timeseries_process, gpmd_filters
 from gopro_overlay.arguments import gopro_dashboard_arguments
@@ -35,6 +36,11 @@ from gopro_overlay.timeunits import timeunits, Timeunit
 from gopro_overlay.timing import PoorTimer, Timers
 from gopro_overlay.units import units
 from gopro_overlay.widgets.profile import WidgetProfiler
+
+
+# suppress PIL logging
+logging.getLogger("PIL").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 def accepter_from_args(include, exclude):
@@ -83,6 +89,11 @@ def fmtdt(dt: datetime.datetime):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=logging.DEBUG,
+        format="[%(asctime)s][%(name)s:%(lineno)s]: %(message)s"
+    )
 
     args = gopro_dashboard_arguments()
 
@@ -150,6 +161,7 @@ if __name__ == "__main__":
                         dimensions = recording.video.dimension
 
                         duration = recording.video.duration
+                        gps_offset = args.offset_gpx
 
                         fns = {
                             "file-created": lambda f: f.ctime,
@@ -159,17 +171,22 @@ if __name__ == "__main__":
 
                         if args.video_time_start:
                             start_date = fns[args.video_time_start](recording.file)
-                            end_date = start_date + duration.timedelta()
+                            end_date = start_date + duration.timedelta() + datetime.timedelta(seconds=gps_offset)
 
                         if args.video_time_end:
-                            start_date = fns[args.video_time_end](recording.file) - duration.timedelta()
+                            start_date = fns[args.video_time_end](recording.file) - duration.timedelta() + datetime.timedelta(seconds=gps_offset)
                             end_date = start_date + duration.timedelta()
 
                     else:
                         generate = "overlay"
 
                     external_file: Path = assert_file_exists(args.gpx)
-                    fit_or_gpx_timeseries = load_external(external_file, units)
+
+                    logger.info(f"Loading GPX/FIT file: {external_file=} {start_date=} {end_date=}")
+                    if start_date:
+                        fit_or_gpx_timeseries = load_external(external_file, units, start_date=start_date, end_date=end_date)
+                    else:
+                        fit_or_gpx_timeseries = load_external(external_file, units)
 
                     log(f"GPX/FIT file:     {fmtdt(fit_or_gpx_timeseries.min)} -> {fmtdt(fit_or_gpx_timeseries.max)}")
 

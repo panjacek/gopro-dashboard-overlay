@@ -11,12 +11,15 @@ from gopro_overlay.framemeta_gpmd import LoadFlag, parse_gopro
 from gopro_overlay.gpmd_filters import GPSLockFilter, NullGPSLockFilter
 from gopro_overlay.log import fatal
 from gopro_overlay.timeseries import Timeseries
+import logging
 
+logger = logging.getLogger(__name__)
 
-def load_external(filepath: Path, units) -> Timeseries:
+def load_external(filepath: Path, units, start_date=None, end_date=None) -> Timeseries:
+    logger.debug(f"Loading external {filepath} with {start_date=} {end_date=}")
     suffix = filepath.suffix.lower()
     if suffix == ".gpx":
-        return gpx.load_timeseries(filepath, units)
+        return gpx.load_timeseries(filepath, units, start_date=start_date, end_date=end_date)
     elif suffix == ".fit":
         return fit.load_timeseries(filepath, units)
     else:

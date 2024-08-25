@@ -122,6 +122,7 @@ def gopro_dashboard_arguments(args=None):
 
     only = parser.add_argument_group("GPX Only", "Creating Movies from GPX File only")
 
+    only.add_argument("--offset-gpx", type=float, default=0.0, help="Offset GPS time by this many seconds, use if GPS is not in sync with video")
     only.add_argument("--use-gpx-only", "--use-fit-only", action="store_true",
                       help="Use only the GPX/FIT file - no GoPro location data")
     only.add_argument("--video-time-start", choices=["file-created", "file-modified", "file-accessed"],

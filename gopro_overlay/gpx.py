@@ -1,4 +1,5 @@
 import collections
+import datetime
 import gzip
 from pathlib import Path
 from typing import List
@@ -9,6 +10,9 @@ from .gpmf import GPSFix
 from .point import Point
 from .timeseries import Timeseries, Entry
 
+import logging
+
+logger = logging.getLogger(__name__)
 GPX = collections.namedtuple("GPX", "time lat lon alt hr cad atemp power speed")
 
 
@@ -64,12 +68,13 @@ def load_xml(file_or_str, units) -> List[GPX]:
     return [with_unit(p, units) for p in fudge(gpx)]
 
 
-def gpx_to_timeseries(gpx: List[GPX], units):
+def gpx_to_timeseries(gpx: List[GPX], units, start_date=None, end_date=None):
     gpx_timeseries = Timeseries()
 
     points = [
         Entry(
-            point.time,
+            # FIXME: replace tzinfo to utc as its in standard of the format, maybe it should elsewhere..
+            point.time.replace(tzinfo=datetime.timezone.utc), # + datetime.timedelta(seconds=62),
             point=Point(point.lat, point.lon),
             alt=point.alt,
             hr=point.hr,
@@ -86,10 +91,23 @@ def gpx_to_timeseries(gpx: List[GPX], units):
         for index, point in enumerate(gpx)
     ]
 
+
+
+    if start_date:
+        logger.debug(f"{len(points)=} {start_date=} {end_date=}\n\n")
+        logger.debug(f"{points[-1].dt=}\n{points[-1].dt >= start_date=}")
+        points = [p for p in points if p.dt >= start_date]
+    if end_date:
+        logger.debug(f"{len(points)=} {start_date=} {end_date=}\n\n")
+        points = [p for p in points if p.dt <= end_date]
+
+    logger.debug(f"{len(points)=} {start_date=} {end_date=}\n\n")
+
     gpx_timeseries.add(*points)
 
     return gpx_timeseries
 
 
-def load_timeseries(filepath: Path, units) -> Timeseries:
-    return gpx_to_timeseries(load(filepath, units), units)
+def load_timeseries(filepath: Path, units, start_date=None, end_date=None) -> Timeseries:
+    logger.debug(f"Loading {filepath} with {start_date=} {end_date=}")
+    return gpx_to_timeseries(load(filepath, units), units, start_date=start_date, end_date=end_date)

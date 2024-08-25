@@ -87,7 +87,10 @@ class FFMPEGGoPro:
             if not matches:
                 raise IOError(f"Unable to find {what} in ffprobe output")
             if len(matches) > 1:
-                raise IOError(f"Multiple matching streams for {what} in ffprobe output")
+		# FIXME: DJI has "empty" streams, just take #0
+                #print(matches)
+                #raise IOError(f"Multiple matching streams for {what} in ffprobe output")
+                pass
             return matches[0]
 
         def only_if_present(what, l, p):

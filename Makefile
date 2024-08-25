@@ -128,6 +128,9 @@ bump-major:
 	$(BIN)/pip install bumpversion
 	$(BIN)/bumpversion major
 
+.PHONY: build-docker
+build-docker:
+	docker build -f docker/Dockerfile -t gopro-dashboard-overlay .
 
 .PHONY: help
 help:

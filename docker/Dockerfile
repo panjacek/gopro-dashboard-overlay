@@ -1,28 +1,33 @@
-FROM ubuntu:23.10
+FROM python:3.11-slim
 
 MAINTAINER gopro-overlay@time4tea.net
 ENV PATH=$PATH:/usr/bin
 
 
-RUN apt update && apt install -y curl gnupg unzip fonts-noto fonts-roboto python3.11 ffmpeg sudo libcairo-dev
+RUN apt update && apt install -y --no-install-recommends \
+        curl \
+        gcc \
+        gnupg \
+        unzip \
+        fonts-noto \
+        fonts-roboto \
+        ffmpeg \
+        make \
+        libcairo2-dev \
+        pkg-config \
+        sudo \
+	# this should be optional \
+        #libnvidia-decode-535-server \
+        # libnvidia-encode-535-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt clean
 
-WORKDIR /
-RUN apt install -y python3.11-venv
-RUN python3.11 -mvenv venv
-RUN /venv/bin/python3.11 -m pip install --upgrade pip
-
-RUN apt install -y gcc
-RUN apt install -y python3.11-dev libcairo2-dev pkg-config
-RUN /venv/bin/pip install pycairo==1.23.0
-
-RUN apt install -y libnvidia-decode-535-server libnvidia-encode-535-server
+WORKDIR /app
 ARG GOPRO_OVERLAY_VERSION
-RUN /venv/bin/pip install gopro-overlay==${GOPRO_OVERLAY_VERSION}
 
-VOLUME /work
-WORKDIR /work
-
-COPY entrypoint.sh /
-
-ENTRYPOINT [ "/entrypoint.sh" ]
-
+#RUN pip install --no-cache-dir \
+#    pycairo==1.23.0 \
+#    gopro-overlay==${GOPRO_OVERLAY_VERSION}
+    
+# COPY entrypoint.sh /app
+# ENTRYPOINT [ "/app/entrypoint.sh" ]

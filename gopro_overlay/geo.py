@@ -4,6 +4,7 @@ import os
 import pathlib
 from functools import partial
 from typing import Optional, Tuple, List, Dict
+import logging
 
 import geotiler
 from geotiler.cache import caching_downloader
@@ -13,6 +14,9 @@ from sqlitedict import SqliteDict
 
 from gopro_overlay.config import Config
 from gopro_overlay.geo_render import my_render_map
+
+# suppress geotiler debug logs
+logging.getLogger("geotiler").setLevel(logging.WARNING)
 
 
 class PrefixMapStyleConfig:
