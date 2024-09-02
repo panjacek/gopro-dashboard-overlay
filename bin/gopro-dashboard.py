@@ -186,7 +186,7 @@ if __name__ == "__main__":
                     if start_date:
                         fit_or_gpx_timeseries = load_external(external_file, units, start_date=start_date, end_date=end_date)
                     else:
-                        fit_or_gpx_timeseries = load_external(external_file, units)
+                        fit_or_gpx_timeseries = load_external(external_file, units, start_date=start_date, end_date=end_date)
 
                     log(f"GPX/FIT file:     {fmtdt(fit_or_gpx_timeseries.min)} -> {fmtdt(fit_or_gpx_timeseries.max)}")
 

@@ -21,7 +21,7 @@ def load_external(filepath: Path, units, start_date=None, end_date=None) -> Time
     if suffix == ".gpx":
         return gpx.load_timeseries(filepath, units, start_date=start_date, end_date=end_date)
     elif suffix == ".fit":
-        return fit.load_timeseries(filepath, units)
+        return fit.load_timeseries(filepath, units, start_date=start_date, end_date=end_date)
     else:
         fatal(f"Don't recognise filetype from {filepath} - support .gpx and .fit")
 

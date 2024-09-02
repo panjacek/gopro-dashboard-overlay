@@ -1,11 +1,16 @@
+import datetime
 from pathlib import Path
 
 import fitdecode
+import logging
 
 from gopro_overlay.entry import Entry
 from gopro_overlay.gpmf import GPSFix
 from gopro_overlay.point import Point
 from gopro_overlay.timeseries import Timeseries
+
+
+logger = logging.getLogger(__name__)
 
 
 def garmin_to_gps(v):
@@ -29,7 +34,7 @@ interpret = {
 }
 
 
-def load_timeseries(filepath: Path, units):
+def load_timeseries(filepath: Path, units, start_date=None, end_date=None) -> Timeseries:
     ts = Timeseries()
 
     with fitdecode.FitReader(filepath) as ff:
@@ -56,6 +61,15 @@ def load_timeseries(filepath: Path, units):
             # only use fit data items that have lat/lon
             if "point" in items:
                 entry.update(**items)
+                # don't add items not required by journey
+                if start_date:
+                    if entry.dt < start_date:
+                        continue
+
+                if end_date:
+                    if entry.dt > end_date:
+                        continue
+
                 ts.add(entry)
 
     return ts
